@@ -1,0 +1,94 @@
+Design and Implement a Relational Database for a Library Management System 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1. Requirements of Library Management System :
+
+ :Books (title, author, category, etc.)
+
+ :Members (students/faculty who borrow books)
+
+ :Staff (who manage the library)
+
+ :Issuing and returning of books
+
+ :Fine calculation for late returns
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2. Entity-Relationship (ER) Design:
+
+  :Book (BookID, Title, Author, Publisher, Year, ISBN, Category, TotalCopies, AvailableCopies)
+
+  :Member (MemberID, Name, Email, Phone, Address, MembershipDate)
+
+  :Staff (StaffID, Name, Email, Phone, Role)
+
+  :Transaction (TransactionID, BookID, MemberID, IssueDate, DueDate, ReturnDate, FineAmount, IssuedBy)
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+3.Relational Schema Design:
+
+CREATE TABLE Book (
+    BookID INT PRIMARY KEY,
+    Title VARCHAR(255),
+    Author VARCHAR(100),
+    Publisher VARCHAR(100),
+    Year INT,
+    ISBN VARCHAR(20) UNIQUE,
+    Category VARCHAR(50),
+    TotalCopies INT,
+    AvailableCopies INT
+);
+
+CREATE TABLE Member (
+    MemberID INT PRIMARY KEY,
+    Name VARCHAR(100),
+    Email VARCHAR(100),
+    Phone VARCHAR(15),
+    Address TEXT,
+    MembershipDate DATE
+);
+
+CREATE TABLE Staff (
+    StaffID INT PRIMARY KEY,
+    Name VARCHAR(100),
+    Email VARCHAR(100),
+    Phone VARCHAR(15),
+    Role VARCHAR(50)
+);
+
+CREATE TABLE Transaction (
+    TransactionID INT PRIMARY KEY,
+    BookID INT,
+    MemberID INT,
+    IssueDate DATE,
+    DueDate DATE,
+    ReturnDate DATE,
+    FineAmount DECIMAL(6,2),
+    IssuedBy INT,
+    FOREIGN KEY (BookID) REFERENCES Book(BookID),
+    FOREIGN KEY (MemberID) REFERENCES Member(MemberID),
+    FOREIGN KEY (IssuedBy) REFERENCES Staff(StaffID)
+);
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+4.Sample Data implementation :
+
+INSERT INTO Book VALUES (1, 'C Programming', 'Dennis Ritchie', 'Prentice Hall', 1988, '1234567890', 'Programming', 10, 10);
+
+INSERT INTO Member VALUES (101, 'Aryan', 'aryan201@gmail.com', '1234567890', 'Amreli', '2024-01-15');
+
+INSERT INTO Staff VALUES (1, 'Meet Gosai', 'meet27@library.com', '9876543210', 'Librarian');
+
+INSERT INTO Transaction VALUES (1, 1, 101, '2025-05-01', '2025-05-15', NULL, 0.00, 1);
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+5.Example Queries :
+
+a. View all issued books:
+SELECT * FROM Transaction WHERE ReturnDate IS NULL;
+
+b. Find overdue books and calculate fine:
+SELECT 
+    T.TransactionID, M.Name AS MemberName, B.Title AS BookTitle,
+    DATEDIFF(CURDATE(), T.DueDate) AS DaysOverdue,
+    (DATEDIFF(CURDATE(), T.DueDate) * 5) AS Fine
+FROM Transaction T
+JOIN Book B ON T.BookID = B.BookID
+JOIN Member M ON T.MemberID = M.MemberID
+WHERE T.ReturnDate IS NULL AND T.DueDate < CURDATE();
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
